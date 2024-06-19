@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body{
+        width: 100%;
+        height: 100%;
+      }
+      .luckBg {
+        background: #ffcf49;
+        width: 95vw;
+        height: 95vw;
+        border-radius: 50%;
+        margin: auto;
+        padding: 5px;
+      }
+
+      .luckWhellBg,
+      .luckWhellBgMain {
+        background: #fff;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .rotateStyle {
+        -webkit-transition: transform 5000ms ease-in-out;
+        transition: transform 5000ms ease-in-out;
+      }
+
+      .luckWhellSector {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform-origin: 0% 100%;
+        border: 1px solid #facd89;
+        border-right: 0;
+        border-top: 0;
+        box-sizing: border-box;
+      }
+
+      .luckWhellSector:nth-child(2n) {
+        position: absolute;
+        background: #fff3d8;
+      }
+
+      .wheel-main {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+      }
+
+      .prize-list {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      .prize-item {
+        position: absolute;
+        left: 50%;
+        height: 50%;
+        padding-top: 15px;
+        box-sizing: border-box;
+        text-align: center;
+        transform-origin: 50% 100%;
+        color: #f83c0e;
+      }
+
+      .prize_point {
+        position: absolute;
+        left: 50%;
+        background: #ff3a60;
+        width: 4rem;
+        height: 4rem;
+        top: 50%;
+        margin-left: -2rem;
+        margin-top: -2rem;
+        border-radius: 50%;
+      }
+
+      .prize_point::after {
+        position: absolute;
+        left: 50%;
+        top: -1.5rem;
+        width: 0;
+        height: 0;
+        margin-left: -1rem;
+        border: 1rem solid;
+        border-color: transparent transparent #ff3a60;
+        content: "";
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="luckBg">
+      <div class="luckWhellBg">
+        <div class="luckWhellBgMain rotateStyle">
+          <!-- <div class="luckWhellSector">
+
+        </div> -->
+        </div>
+        <div class="wheel-main">
+          <div class="prize-list rotateStyle">
+            <!-- <div class="prize-item" v-for='(item,index) in prize_List' :key="index" :style="item.style">
+							
+						<div>
+							{{item.prize_name}}	
+						</div>	
+						<div style="padding-top:5px;">
+							<img :src="item.img" style="width:45%"/>
+						</div>	
+					</div>		 -->
+          </div>
+          <div class="prize_point" onclick="prizeRoll()"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const CIRCLE_ANGLE = 360;
+    const BIGSIZE = 40;
+    let data = [
+      {
+        //可以随意更改奖项个数
+        id: 1,
+        img: "https://img01.yzcdn.cn/vant/cat.jpeg",
+        prize_name: "测试1号",
+      },
+      {
+        id: 2,
+        img: "https://img01.yzcdn.cn/vant/cat.jpeg",
+        prize_name: "测试2号",
+      },
+      {
+        id: 3,
+        img: "https://img01.yzcdn.cn/vant/cat.jpeg",
+        prize_name: "测试3号",
+      },
+      {
+        id: 4,
+        img: "https://img01.yzcdn.cn/vant/cat.jpeg",
+        prize_name: "测试4号",
+      },
+      {
+        id: 5,
+        img: "https://img01.yzcdn.cn/vant/cat.jpeg",
+        prize_name: "测试5号",
+      },
+    ];
+    let prizeList = []; //有样式的奖品列表
+    let angleList = []; // 记录每个奖的位置
+    let gift_id = 3; //中奖ID
+    let index = ""; //抽中的是第几个奖品
+    let isRotating = false; //为了防止重复点击
+    let rotateAngle = 0;
+    let bgDom = document.getElementsByClassName("luckWhellBgMain")[0];
+    let divDom = document.getElementsByClassName("prize-list")[0];
+    //每个奖增加style
+    function formatPrizeList(list) {
+      const l = list.length;
+      // 计算单个奖项所占的角度
+      const average = CIRCLE_ANGLE / l; //60
+      const half = average / 2; //30
+      const rightBig = l == 2 ? "50" : "0";
+      const heightBig = l <= 3 ? "100" : "50";
+      const topBig = l == 3 ? "-50" : "0";
+      const skewMain = l <= 2 ? 0 : (-(l - 4) * 90) / l;
+      // 循环计算给每个奖项添加style属性
+      list.forEach((item, i) => {
+        // 每个奖项旋转的位置为 当前 i * 平均值 + 平均值 / 2
+        const angle = -(i * average + half);
+        const bigAge = l > 2 ? (i * 360) / l : "0";
+        // 增加 style 这个是给每一个奖项增加的样式
+        item.style = `-webkit-transform: rotate(${-angle}deg);
+          transform: rotate(${-angle}deg);
+          width:${(100 / l) * 2}%;  
+          margin-left: -${100 / l}%;
+          font-size:${BIGSIZE - l}px;`;
+        //这是给每一个转盘背景新增的样式
+        item.style2 = `-webkit-transform: rotate(${bigAge}deg);
+          transform: rotate(${bigAge}deg) skewY(${skewMain}deg);
+          right:${rightBig * i}%;
+          height:${heightBig}%;
+          top:${topBig}%;
+          width:${l == 1 ? 100 : 50}%;
+          background:${item.color}
+          `;
+        // 记录每个奖项的角度范围
+        angleList.push(angle);
+      });
+      return list;
+    }
+    //奖品赋值到每个奖品中；
+    function prizeAddHtml(prizeList) {
+      //把奖品赋值到.luckWhellBgMain
+      let htmlBg = "";
+      let htmlDiv = "";
+      for (let i = 0, len = prizeList.length; i < len; i++) {
+        htmlBg += `<div class="luckWhellSector" style="${prizeList[i].style2}"></div>`;
+        htmlDiv += `<div class="prize-item"  style="${prizeList[i].style}">							
+          <div>
+            ${prizeList[i].prize_name}                
+          </div>	
+          <div style="padding-top:5px;">
+            
+          </div>	
+        </div>`;
+      }
+      // <img src=" ${prizeList[i].img}" style="width:45%"/>
+      console.log("htmlBg: ", htmlBg);
+      console.log("htmlDiv: ", htmlDiv);
+      bgDom.innerHTML = htmlBg;
+      divDom.innerHTML = htmlDiv;
+    }
+    //抽奖
+    function prizeRoll() {
+      if (isRotating) return false;
+      gift_id = Math.floor(1 + Math.random() * prizeList.length);
+      console.log(gift_id);
+      prizeList.forEach((item, i) => {
+        if (item.id == gift_id) index = i; //判断中奖的位置
+      });
+      rotating();
+    }
+    //转盘转动角度
+    function rotating() {
+      isRotating = true;
+      // const {rotateAngle,angleList,config,index} = {0,angleList,{duration:5000, circle: 8,mode: "ease-in-out"},index};
+      const config = {
+        duration: 5000,
+        circle: 8,
+        mode: "ease-in-out",
+      };
+      // 计算角度
+      const angle =
+        // 初始角度
+        rotateAngle +
+        // 多旋转的圈数
+        config.circle * CIRCLE_ANGLE +
+        // 奖项的角度
+        angleList[index] -
+        (rotateAngle % CIRCLE_ANGLE);
+      rotateAngle = angle;
+      bgDom.style.transform = `rotate(${rotateAngle}deg)`;
+      divDom.style.transform = `rotate(${rotateAngle}deg)`;
+      // 旋转结束后，允许再次触发
+      setTimeout(() => {
+        isRotating = false;
+        console.log("旋转结束");
+      }, config.duration + 500);
+    }
+    let url =
+      "https://www.fastmock.site/mock/d8f56a6ec670888c145e68a888e5c817/lizhengjie/turntableItems";
+    fetch(url)
+      .then((response) => response.json())
+      .then((res) => {
+        // Handle the data here
+        console.log("res: ", res);
+        data = res.data;
+        console.log("data: ", data);
+        prizeList = formatPrizeList(data); //有样式的奖品列表
+        console.log("prizeList: ", prizeList);
+
+        prizeAddHtml(prizeList);
+      })
+      .catch((error) => {
+        // Handle any errors here
+      });
+  </script>
+</html>
